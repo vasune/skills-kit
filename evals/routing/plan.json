@@ -1,0 +1,20 @@
+{
+  "skill": "plan",
+  "positive": [
+    "напиши план работ по задаче",
+    "составь markdown-план и сохрани в plans",
+    "нужен план в plans, без реализации",
+    "сделай markdown-план в plans перед кодом",
+    "write a plan for this task, no execution"
+  ],
+  "negative": [
+    {
+      "prompt": "ещё не ясно, что именно строить",
+      "owner": "brainstorming"
+    },
+    {
+      "prompt": "баг непонятный, найди root cause",
+      "owner": "systematic-debugging"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "skills-kit",
+  "description": "A versioned library of engineering skills and subagent roles for AI coding agents: review, testing, delivery, and workflow discipline.",
+  "owner": {
+    "name": "fhfqndj",
+    "url": "https://github.com/fhfqndj"
+  },
+  "plugins": [
+    {
+      "name": "skills-kit",
+      "version": "1.0.0",
+      "source": {
+        "source": "github",
+        "repo": "fhfqndj/skills-kit"
+      },
+      "description": "Engineering skills and subagent roles covering review, testing, delivery, and workflow discipline for AI coding agents.",
+      "homepage": "https://github.com/fhfqndj/skills-kit",
+      "license": "MIT",
+      "keywords": [
+        "skills",
+        "agents",
+        "workflow",
+        "review",
+        "testing",
+        "delivery"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "skill": "systematic-debugging",
+  "positive": [
+    "find the root cause of this bugs",
+    "understand the bugs before fixing",
+    "4-phase debugging: root cause first",
+    "understand the bugs, find the root cause",
+    "why does it fail? understand the root cause",
+    "вот ошибка, код вставлен в чат — найди root cause"
+  ],
+  "negative": [
+    {
+      "prompt": "write a failing test first, then code",
+      "owner": "test-driven-development"
+    },
+    {
+      "prompt": "review this diff before commit",
+      "owner": "requesting-code-review"
+    }
+  ]
+}

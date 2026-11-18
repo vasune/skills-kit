@@ -1,0 +1,17 @@
+{
+  "skill": "requesting-code-review",
+  "positive": [
+    "review this diff before commit",
+    "pre-commit review: security scan and quality gates",
+    "run security scan and quality gates before commit",
+    "прогони security scan и quality gates перед commit",
+    "pre-commit review с auto-fix перед пушем",
+    "вот дифф, код вставлен в чат — security scan перед commit"
+  ],
+  "negative": [
+    {
+      "prompt": "тесты прошли, работа готова?",
+      "owner": "verification-before-completion"
+    }
+  ]
+}

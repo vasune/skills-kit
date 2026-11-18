@@ -1,0 +1,22 @@
+{
+  "name": "skills-kit",
+  "interface": {
+    "displayName": "skills-kit"
+  },
+  "plugins": [
+    {
+      "name": "skills-kit",
+      "version": "1.0.0",
+      "description": "Engineering skills and subagent roles covering review, testing, delivery, and workflow discipline for AI coding agents.",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

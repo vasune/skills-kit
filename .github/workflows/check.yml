@@ -1,0 +1,35 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Repository integrity
+        run: ./scripts/check.py
+
+      - name: Skill language
+        run: ./scripts/lang_check.py
+
+      - name: Validator tests
+        run: python3 ./scripts/test_check.py
+
+      - name: Installer tests
+        run: python3 ./scripts/test_verify_install.py
+
+      - name: Routing eval
+        run: python3 ./scripts/routing_eval.py --min-rank1 90

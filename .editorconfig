@@ -1,0 +1,25 @@
+# Единый стиль файлов для любой машины и редактора.
+# Набор переносится между хостами и ОС, поэтому переводы строк и кодировка
+# зафиксированы здесь, а не в голове автора.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.py]
+indent_size = 4
+
+[*.sh]
+indent_size = 2
+
+[Makefile]
+indent_style = tab
+
+[*.md]
+# В markdown два пробела в конце строки — перенос, поэтому не срезаем.
+trim_trailing_whitespace = false

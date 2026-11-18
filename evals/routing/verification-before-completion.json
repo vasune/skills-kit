@@ -1,0 +1,20 @@
+{
+  "skill": "verification-before-completion",
+  "positive": [
+    "готово, можно коммитить?",
+    "тесты прошли, работа готова?",
+    "докажи, что работа готова",
+    "можно заявлять, что работа готова?",
+    "работа сделана — покажи доказательство"
+  ],
+  "negative": [
+    {
+      "prompt": "составь markdown-план и сохрани в plans",
+      "owner": "plan"
+    },
+    {
+      "prompt": "пре-коммит review: security scan и quality gates",
+      "owner": "requesting-code-review"
+    }
+  ]
+}

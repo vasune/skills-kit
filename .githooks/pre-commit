@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Локальный pre-commit: целостность репозитория + staged-скан секретов.
+# Установка: make hooks (git config core.hooksPath .githooks).
+# Секреты не печатаем — только имена файлов, значение остаётся в диффе.
+
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "$root" ]; then
+  echo "pre-commit: не git-репозиторий — пропуск"
+  exit 0
+fi
+cd "$root"
+
+if [ -f ./scripts/check.py ]; then
+  if ! ./scripts/check.py; then
+    echo
+    echo "pre-commit: check.py упал — коммит остановлен, смотри вывод выше."
+    echo "  Если в дереве есть чужая незакоммиченная работа, падение может быть"
+    echo "  из-за неё: это ожидаемо, разберись по 'git status --short'."
+    exit 1
+  fi
+else
+  echo "pre-commit: scripts/check.py нет — проверка целостности пропущена"
+fi
+
+# -G ищет строку в staged-диффе и печатает только имена файлов; -i — без регистра.
+hits="$(git diff --cached -i -G'password|secret|api_key|token' --name-only || true)"
+if [ -n "$hits" ]; then
+  echo "pre-commit: в staged-диффе есть строки, похожие на секреты. Посмотри эти файлы:" >&2
+  printf '%s\n' "$hits" | sed 's/^/  - /' >&2
+  echo "Значение не печатаем намеренно: оно попало бы в лог хука." >&2
+  exit 1
+fi
+
+echo "pre-commit: check.py зелёный, staged-секретов нет"

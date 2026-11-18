@@ -1,0 +1,21 @@
+{
+  "skill": "test-driven-development",
+  "positive": [
+    "пишем логику — сначала тест",
+    "тест до кода, логика потом",
+    "нужен падающий тест перед логикой",
+    "пишется логика, начни с теста",
+    "TDD: тест, потом логика",
+    "код вставлен в чат — пишем логику через тест"
+  ],
+  "negative": [
+    {
+      "prompt": "bugs in production, find root cause",
+      "owner": "systematic-debugging"
+    },
+    {
+      "prompt": "составь markdown-план и сохрани в plans",
+      "owner": "plan"
+    }
+  ]
+}

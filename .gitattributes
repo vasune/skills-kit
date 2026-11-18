@@ -1,0 +1,23 @@
+# Нормализация текста в git: репозиторий переносится между ОС и хостами,
+# поэтому в индексе и рабочем дереве — LF, а бинарные артефакты не трогаем.
+* text=auto eol=lf
+
+*.md text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+Makefile text eol=lf
+.githooks/* text eol=lf
+
+# Бинарное: не конвертировать и не считать текстом.
+*.zip binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.pptx binary

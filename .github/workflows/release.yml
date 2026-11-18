@@ -1,0 +1,73 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Тег релиза. Пусто — вычислить: тег текущей ревизии или v<version из plugin.json>"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Repository integrity
+        run: ./scripts/check.py
+
+      - name: Skill language
+        run: ./scripts/lang_check.py
+
+      - name: Validator tests
+        run: python3 ./scripts/test_check.py
+
+      - name: Routing eval
+        run: python3 ./scripts/routing_eval.py --min-rank1 90
+
+      - name: Build release artifact
+        id: pack
+        run: |
+          python3 ./scripts/pack.py --release | tee /tmp/pack.out
+          echo "zip=$(tail -n 1 /tmp/pack.out)" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve release tag
+        id: tag
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          if [ -n "$INPUT_TAG" ]; then
+            tag="$INPUT_TAG"
+          elif [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            tag="v$(python3 -c 'import json; print(json.load(open("plugin.json"))["version"])')"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure release exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --title "skills-kit $TAG" --generate-notes --target "$GITHUB_SHA"
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: gh release upload "$TAG" dist/skills-kit-*.zip --clobber
