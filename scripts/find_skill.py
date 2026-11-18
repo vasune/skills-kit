@@ -64,7 +64,9 @@ def load_levels(repo: Path) -> dict[str, str]:
         return {}
     return {
         name: level
-        for name, _group, level in INDEX_ROW.findall(index.read_text(errors="ignore"))
+        for name, _group, level in INDEX_ROW.findall(
+            index.read_text(encoding="utf-8", errors="ignore")
+        )
     }
 
 

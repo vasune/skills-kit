@@ -185,6 +185,7 @@ ROLE_REQUIRED_SECTIONS = (
 # упаковки (временное, тестовое) остаётся зелёным.
 ROOT_MANIFEST = "plugin.json"
 OTHER_MANIFESTS = (
+    "package.json",
     ".claude-plugin/plugin.json",
     ".claude-plugin/marketplace.json",
     ".codex-plugin/plugin.json",
@@ -753,6 +754,53 @@ def manifest_errors(repo: Path) -> list[str]:
     return errors
 
 
+def dsh_bundle_errors(repo: Path) -> list[str]:
+    """Связка пакета DeepSeek Harness: пакет → патч → модуль рядом с патчем.
+
+    Без DSH-пакета правило не применяется: дерево без бандла (временное,
+    тестовое) остаётся зелёным. Проверяется то, что DSH читает при установке:
+    `dsh.bundle.patch` в package.json, существование патча и каждого модуля,
+    который патч подключает относительным путём.
+    """
+    package_path = repo / "package.json"
+    if not package_path.is_file():
+        return []
+    data, problem = load_manifest(package_path)
+    if data is None:
+        return [f"package.json: {problem}"]
+    patch_raw = None
+    bundle = data.get("dsh")
+    if isinstance(bundle, dict):
+        declaration = bundle.get("bundle")
+        if isinstance(declaration, dict) and isinstance(declaration.get("patch"), str):
+            patch_raw = declaration["patch"]
+    if not patch_raw:
+        # package.json бывает и не для DSH; правило включается, когда рядом
+        # лежит патч бандла — значит пакет задуман как DSH-бандл.
+        if (repo / "cordis.patch.yml").is_file():
+            return [
+                "package.json: нет dsh.bundle.patch, а cordis.patch.yml есть — "
+                "DSH не увидит пакет как бандл"
+            ]
+        return []
+    if Path(patch_raw).is_absolute():
+        return [f"package.json: dsh.bundle.patch={patch_raw!r} — абсолютный путь"]
+    patch_path = repo / patch_raw.removeprefix("./")
+    if not patch_path.is_file():
+        return [f"package.json: dsh.bundle.patch={patch_raw!r} не существует"]
+    text = patch_path.read_text(encoding="utf-8")
+    modules = re.findall(r"^\s*name:\s*['\"]?(\./[^'\"\s]+)", text, re.MULTILINE)
+    if not modules:
+        return [
+            f"{patch_raw}: ни одна строка не подключает модуль рядом с патчем"
+        ]
+    errors: list[str] = []
+    for module in dict.fromkeys(modules):
+        if not (patch_path.parent / module).is_file():
+            errors.append(f"{patch_raw}: модуль {module!r} не существует")
+    return errors
+
+
 # --- редакционные предупреждения ------------------------------------------
 
 
@@ -837,7 +885,7 @@ def run(repo: Path = REPO) -> Report:
     related_map: dict[str, set[str]] = {}
     for rel, skill_md in skill_dirs:
         name = skill_md.parent.name
-        text = skill_md.read_text(errors="ignore")
+        text = skill_md.read_text(encoding="utf-8", errors="ignore")
         meta, errors = check_skill_frontmatter(rel.as_posix(), name, text)
         report.errors.extend(errors)
         if not meta:
@@ -908,7 +956,7 @@ def run(repo: Path = REPO) -> Report:
         if not path.is_file():
             continue
         rel = path.relative_to(repo)
-        text = path.read_text(errors="ignore")
+        text = path.read_text(encoding="utf-8", errors="ignore")
         report.errors.extend(hygiene_errors(rel.as_posix(), text))
         if path.suffix == ".md":
             report.errors.extend(broken_link_errors(rel.as_posix(), path, text))
@@ -927,7 +975,7 @@ def run(repo: Path = REPO) -> Report:
                 check_role(
                     path.relative_to(repo).as_posix(),
                     path.stem,
-                    path.read_text(errors="ignore"),
+                    path.read_text(encoding="utf-8", errors="ignore"),
                 )
             )
     role_readme = subagents / "README.md"
@@ -940,7 +988,7 @@ def run(repo: Path = REPO) -> Report:
     if not index.is_file():
         report.errors.append("нет INDEX.md")
     else:
-        index_text = index.read_text(errors="ignore")
+        index_text = index.read_text(encoding="utf-8", errors="ignore")
         named = set(
             re.findall(r"\]\(skills/[a-z-]+/([a-z0-9-]+)/SKILL\.md\)", index_text)
         )
@@ -960,13 +1008,14 @@ def run(repo: Path = REPO) -> Report:
                     repo,
                     set(skill_names),
                     index_text,
-                    readme.read_text(errors="ignore"),
-                    role_readme.read_text(errors="ignore"),
+                    readme.read_text(encoding="utf-8", errors="ignore"),
+                    role_readme.read_text(encoding="utf-8", errors="ignore"),
                     role_names,
                 )
             )
     routing_coverage(repo, set(skill_names), report)
     report.errors.extend(manifest_errors(repo))
+    report.errors.extend(dsh_bundle_errors(repo))
     return report
 
 

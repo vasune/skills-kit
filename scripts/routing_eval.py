@@ -235,7 +235,9 @@ def load_skills(repo: Path) -> tuple[dict[str, Skill], list[str]]:
         return {}, [f"нет каталога {skills_root}"]
     for path in sorted(skills_root.glob("*/*/SKILL.md")):
         name = path.parent.name
-        description = frontmatter_description(path.read_text(errors="ignore"))
+        description = frontmatter_description(
+            path.read_text(encoding="utf-8", errors="ignore")
+        )
         if not description:
             errors.append(f"{path.relative_to(repo)}: нет description")
             continue
@@ -263,7 +265,7 @@ def load_cases(repo: Path, skills: dict[str, Skill]) -> tuple[list[Case], list[s
     for path in sorted(cases_dir.glob("*.json")):
         rel = path.relative_to(repo)
         try:
-            data = json.loads(path.read_text())
+            data = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as error:
             errors.append(f"{rel}: не JSON — {error.msg}")
             continue

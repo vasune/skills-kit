@@ -2,7 +2,7 @@
 # Раскладка навыков репозитория по каталогам агента.
 #   ./scripts/install.sh --target list
 #   ./scripts/install.sh --target all [--pack core,code] [--force] [--dry-run]
-#   ./scripts/install.sh --target claude|opencode|codex|gemini|cursor|copilot|kiro|windsurf
+#   ./scripts/install.sh --target claude|opencode|dsh|codex|gemini|cursor|copilot|kiro|windsurf
 #   ./scripts/install.sh --target /абсолютный/путь [--mode copy|link] [--pack …] [--force] [--dry-run]
 #   ./scripts/install.sh --target <цель> --verify [--dry-run]
 # По умолчанию копирует: поиск навыков идёт обходом каталога, а символические
@@ -32,6 +32,9 @@ usage() {
   all         установить во все существующие каталоги хостов (новые не создаёт)
   claude      ~/.claude/skills/<навык> (каталог создаётся)
   opencode    ~/.config/opencode/skill/<навык> (каталог создаётся)
+  dsh         $DSH_HOME/skills/<навык>, по умолчанию ~/.dsh/skills
+              (каталог создаётся; для DSH предпочтительнее пакет-бандл,
+              см. README — тогда копия не нужна)
   codex       ~/.codex/skills/<навык> (каталог должен существовать)
   gemini      ~/.gemini/skills/<навык> (каталог должен существовать)
   cursor      .cursor/skills/<навык> в репозитории (проектный, должен существовать)
@@ -62,6 +65,7 @@ target_path() {
   case "$1" in
     claude)   echo "$HOME/.claude/skills" ;;
     opencode) echo "$HOME/.config/opencode/skill" ;;
+    dsh)      echo "${DSH_HOME:-$HOME/.dsh}/skills" ;;
     codex)    echo "$HOME/.codex/skills" ;;
     gemini)   echo "$HOME/.gemini/skills" ;;
     cursor)   echo "$REPO/.cursor/skills" ;;
@@ -71,7 +75,7 @@ target_path() {
   esac
 }
 
-# Каталоги, которые исторически создаются самим install.sh: claude, opencode.
+# Каталоги, которые исторически создаются самим install.sh: claude, opencode, dsh.
 # Остальные именованные цели требуют существующего каталога.
 
 pretty_path() {
@@ -99,7 +103,7 @@ show_groups() {
 show_targets() {
   local name path state
   printf '%s\n' "цель | путь | состояние"
-  for name in claude opencode codex gemini cursor copilot kiro; do
+  for name in claude opencode dsh codex gemini cursor copilot kiro; do
     path="$(target_path "$name")"
     if [ -d "$path" ]; then
       state="каталог есть"
@@ -107,7 +111,7 @@ show_targets() {
       state="каталога нет"
     fi
     case "$name" in
-      claude|opencode) state="$state, install создаст" ;;
+      claude|opencode|dsh) state="$state, install создаст" ;;
       cursor|copilot|kiro) state="$state, проектный, не создаётся" ;;
       *)               state="$state, не создаётся" ;;
     esac
@@ -170,7 +174,7 @@ install_flat() {
 
 install_all() {
   local name path skipped=0
-  for name in claude opencode codex gemini cursor copilot kiro; do
+  for name in claude opencode dsh codex gemini cursor copilot kiro; do
     path="$(target_path "$name")"
     if [ ! -d "$path" ]; then
       echo "  - $name: $(pretty_path "$path") — каталога нет, пропущено"
@@ -203,7 +207,7 @@ verify_one() {
 
 verify_all() {
   local name path
-  for name in claude opencode codex gemini cursor copilot kiro; do
+  for name in claude opencode dsh codex gemini cursor copilot kiro; do
     path="$(target_path "$name")"
     [ -d "$path" ] || continue
     verify_one "$name"
@@ -270,7 +274,7 @@ fi
 echo "репозиторий: $REPO"
 case "$TARGET" in
   list)     show_targets ;;
-  claude|opencode)
+  claude|opencode|dsh)
     install_flat "$(target_path "$TARGET")" "${selected[@]}" ;;
   codex|gemini|cursor|copilot|kiro)
     require_dir "$TARGET" "$(target_path "$TARGET")"
@@ -283,7 +287,7 @@ case "$TARGET" in
   /*)       install_flat "$TARGET" "${selected[@]}" ;;
   *)
     echo "неизвестная цель: $TARGET" >&2
-    echo "Цели: list, all, claude, opencode, codex, gemini, cursor," >&2
+    echo "Цели: list, all, claude, opencode, dsh, codex, gemini, cursor," >&2
     echo "copilot, kiro, windsurf или абсолютный путь." >&2
     exit 2 ;;
 esac

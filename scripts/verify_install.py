@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -28,6 +29,7 @@ REPO = Path(__file__).resolve().parent.parent
 HOST_NAMES = (
     "claude",
     "opencode",
+    "dsh",
     "codex",
     "gemini",
     "cursor",
@@ -44,9 +46,11 @@ class UsageError(Exception):
 def host_dir(name: str, repo: Path) -> Path:
     """Каталог навыков хоста — та же таблица, что в scripts/install.sh."""
     home = Path.home()
+    dsh_home = Path(os.environ.get("DSH_HOME") or home / ".dsh").expanduser()
     mapping = {
         "claude": home / ".claude" / "skills",
         "opencode": home / ".config" / "opencode" / "skill",
+        "dsh": dsh_home / "skills",
         "codex": home / ".codex" / "skills",
         "gemini": home / ".gemini" / "skills",
         "cursor": repo / ".cursor" / "skills",
@@ -78,7 +82,7 @@ def resolve_target(name: str, repo: Path) -> tuple[str, Path]:
     )
     if not looks_like_path:
         raise UsageError(
-            f"неизвестная цель: {name}. Цели: claude, opencode, codex, "
+            f"неизвестная цель: {name}. Цели: claude, opencode, dsh, codex, "
             "gemini, cursor, copilot, kiro или существующий каталог путём"
         )
     path = Path(name).expanduser()
@@ -154,6 +158,15 @@ def host_checks(name: str, repo: Path, skills: list[tuple[str, str, Path]]) -> l
 
     def add(check: str, status: str, detail: str) -> None:
         checks.append({"check": check, "status": status, "detail": detail})
+
+    if name == "dsh":
+        add(
+            "dsh",
+            "info",
+            "проверь список навыков в сессии DSH; пакет-бандл из README "
+            "ставится без копирования каталогов",
+        )
+        return checks
 
     binary = shutil.which(name)
     if binary and name in SESSION_HOSTS:

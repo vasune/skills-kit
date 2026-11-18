@@ -1,0 +1,30 @@
+{
+  "name": "skills-kit",
+  "version": "1.0.0",
+  "description": "Universal process skills for AI coding agents: planning, delegation, git/GitHub workflows, code review, testing, debugging.",
+  "license": "MIT",
+  "author": {
+    "name": "fhfqndj",
+    "url": "https://github.com/fhfqndj"
+  },
+  "homepage": "https://github.com/fhfqndj/skills-kit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fhfqndj/skills-kit.git"
+  },
+  "keywords": [
+    "skills",
+    "agents",
+    "workflow",
+    "review",
+    "testing",
+    "delivery",
+    "deepseek-harness"
+  ],
+  "type": "module",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

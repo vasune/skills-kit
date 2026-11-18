@@ -11,6 +11,7 @@ tempfile. Кроме отдельных правил есть «ловушка �
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -838,6 +839,75 @@ class ManifestParityTests(RepoTestCase):
         )
 
 
+# --- связка DSH-бандла -----------------------------------------------------
+
+
+class DshBundleTests(RepoTestCase):
+    patch = "- insert:\n    - id: skills-kit\n      name: './dsh-plugin.js'\n"
+
+    def bundle(self, patch: str | None = None, module: bool = True) -> None:
+        write_manifest(
+            self.repo,
+            "package.json",
+            {
+                "name": "skills-kit",
+                "version": "1.0.0",
+                "dsh": {"bundle": {"patch": "./cordis.patch.yml"}},
+            },
+        )
+        write(self.repo / "cordis.patch.yml", patch or self.patch)
+        if module:
+            write(self.repo / "dsh-plugin.js", "export function apply() {}\n")
+
+    def test_wired_bundle_is_green(self) -> None:
+        self.bundle()
+        self.assertEqual(self.report().errors, [])
+
+    def test_missing_patch_is_error(self) -> None:
+        self.bundle(module=False)
+        (self.repo / "cordis.patch.yml").unlink()
+        self.assertIn("не существует", errors_text(self.report()))
+
+    def test_missing_module_is_error(self) -> None:
+        self.bundle(module=False)
+        self.assertIn("модуль './dsh-plugin.js' не существует", errors_text(self.report()))
+
+    def test_patch_without_relative_module_is_error(self) -> None:
+        self.bundle(patch="- insert:\n    - id: x\n      name: 'skills-kit'\n")
+        self.assertIn(
+            "ни одна строка не подключает модуль рядом с патчем",
+            errors_text(self.report()),
+        )
+
+    def test_dropped_declaration_next_to_patch_is_error(self) -> None:
+        write_manifest(self.repo, "package.json", {"name": "skills-kit", "version": "1.0.0"})
+        write(self.repo / "cordis.patch.yml", self.patch)
+        write(self.repo / "dsh-plugin.js", "export function apply() {}\n")
+        self.assertIn("нет dsh.bundle.patch", errors_text(self.report()))
+
+    def test_package_without_bundle_files_is_ignored(self) -> None:
+        write_manifest(self.repo, "package.json", {"name": "not-a-bundle", "version": "1.0.0"})
+        self.assertEqual(self.report().errors, [])
+
+    def test_version_parity_with_root_manifest(self) -> None:
+        write_manifest(self.repo, "plugin.json", plugin_manifest("1.0.0"))
+        self.bundle()
+        self.assertEqual(self.report().errors, [])
+        write_manifest(
+            self.repo,
+            "package.json",
+            {
+                "name": "skills-kit",
+                "version": "1.0.1",
+                "dsh": {"bundle": {"patch": "./cordis.patch.yml"}},
+            },
+        )
+        self.assertIn(
+            "package.json: version=1.0.1, а в plugin.json 1.0.0",
+            errors_text(self.report()),
+        )
+
+
 # --- CLI -------------------------------------------------------------------
 
 
@@ -846,7 +916,8 @@ class CliTests(RepoTestCase):
         return subprocess.run(
             [sys.executable, str(CHECK_PY), "--repo", str(repo)],
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            env={**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"},
             check=False,
         )
 
@@ -871,7 +942,8 @@ class CliTests(RepoTestCase):
         result = subprocess.run(
             [sys.executable, str(CHECK_PY), "--repo", str(self.repo), "-v"],
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            env={**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"},
             check=False,
         )
         self.assertIn("baseline", result.stdout)

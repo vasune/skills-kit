@@ -69,14 +69,18 @@ class VerifyInstallTests(unittest.TestCase):
         bin_dir: Path | None = None,
     ) -> subprocess.CompletedProcess:
         env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        env["PYTHONUTF8"] = "1"
         if home is not None:
             env["HOME"] = str(home)
+            # Windows: Path.home() читает USERPROFILE, а не HOME.
+            env["USERPROFILE"] = str(home)
             path = "/usr/bin:/bin"  # без claude и прочих хостов
             if bin_dir is not None:
                 path = f"{bin_dir}:{path}"
             env["PATH"] = path
         cmd = [sys.executable, str(VERIFY), "--repo", str(self.repo), *args]
-        return subprocess.run(cmd, capture_output=True, text=True, env=env)
+        return subprocess.run(cmd, capture_output=True, encoding="utf-8", env=env)
 
     # --- тесты ------------------------------------------------------------
 
