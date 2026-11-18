@@ -157,8 +157,12 @@ metadata:
 Установка пакетом (предпочтительно):
 
 ```text
-plugin_manager install_bundle target: github:fhfqndj/skills-kit
+plugin_manager install_bundle target: github:vasune/skills-kit
 ```
+
+Спецификация — `<owner>/<repo>` того репозитория, где лежит этот пакет: в
+форке подставляется свой владелец, в upstream — только после мержа коммита с
+бандлом.
 
 После установки бандл `skills-kit` виден в списке бандлов профиля; в новой
 сессии навыки репозитория появляются в каталоге рядом с навыками хоста.
