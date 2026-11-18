@@ -99,35 +99,18 @@ WHEN_SECTION = re.compile(
     r"^#{1,4}\s+(?:когда открывать|when to use|когда применять)\b", re.I | re.M
 )
 SKILL_LINE_BUDGET = 300
+# Жёсткий потолок: весь SKILL.md уезжает в контекст одним куском при загрузке
+# навыка, поэтому длинное тело — ошибка, а не предупреждение. Долг закрыт:
+# самый большой навык (~22 КБ) ниже порога, остальное живёт в references/.
+SKILL_CHARS_MAX = 24000
 
 # Baseline редакционного долга: эти нарушения уже есть у легаси-навыков, поэтому
 # не топят гейт, но новые нарушения того же класса ловятся. Список сокращается
 # по мере починки навыков; исключение живёт в валидаторе, а не в файле навыка.
-TRIGGER_BASELINE = frozenset(
-    {
-        "requesting-code-review",
-        "systematic-debugging",
-        "merge-reconciler",
-        "plan",
-        "github-code-review",
-        "github-issues",
-        "github-pr-workflow",
-        "github-repo-management",
-    }
-)
-WHEN_SECTION_BASELINE = frozenset(
-    {
-        "delegating-to-subagents",
-        "plan",
-        "project-context",
-        "using-skills-kit",
-        "github-auth",
-        "github-code-review",
-        "github-issues",
-        "github-pr-workflow",
-        "github-repo-management",
-    }
-)
+# Триггер и раздел «когда открывать» вычищены у всех навыков: наборы пусты, и
+# правило действует на каждый навык без исключений.
+TRIGGER_BASELINE: frozenset[str] = frozenset()
+WHEN_SECTION_BASELINE: frozenset[str] = frozenset()
 LINE_BUDGET_BASELINE = frozenset(
     {
         "requesting-code-review",
@@ -807,6 +790,13 @@ def dsh_bundle_errors(repo: Path) -> list[str]:
 def budget_warnings(
     rel: str, name: str, text: str, report: Report
 ) -> None:
+    chars = len(text)
+    if chars > SKILL_CHARS_MAX:
+        report.errors.append(
+            f"{rel}: SKILL.md {chars} символов (> {SKILL_CHARS_MAX}) — "
+            f"разнести в references/: тело навыка читается в контекст целиком"
+        )
+        return
     lines = len(text.splitlines())
     if lines <= SKILL_LINE_BUDGET:
         return

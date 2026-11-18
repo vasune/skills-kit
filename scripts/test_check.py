@@ -370,7 +370,11 @@ class DescriptionTests(RepoTestCase):
         )
         self.assertIn("не начинается с триггера", warnings_text(self.report()))
 
-    def test_trigger_baseline_does_not_warn(self) -> None:
+    def test_trigger_baseline_is_empty(self) -> None:
+        self.assertEqual(check.TRIGGER_BASELINE, frozenset())
+        self.assertEqual(check.WHEN_SECTION_BASELINE, frozenset())
+
+    def test_trigger_baseline_still_silences_listed_skill(self) -> None:
         build_repo(
             self.repo,
             skills=[
@@ -388,9 +392,14 @@ class DescriptionTests(RepoTestCase):
                 },
             ],
         )
-        report = self.report()
-        self.assertNotIn("не начинается с триггера", warnings_text(report))
-        self.assertEqual(report.baseline["description без триггера"], 1)
+        saved = check.TRIGGER_BASELINE
+        check.TRIGGER_BASELINE = frozenset({"plan"})
+        try:
+            report = self.report()
+            self.assertNotIn("не начинается с триггера", warnings_text(report))
+            self.assertEqual(report.baseline["description без триггера"], 1)
+        finally:
+            check.TRIGGER_BASELINE = saved
 
     def test_when_section_warning(self) -> None:
         text = skill_text("alpha").replace("## Когда открывать", "## Обзор")
@@ -401,6 +410,17 @@ class DescriptionTests(RepoTestCase):
         body = "\n".join(f"- строка {i}" for i in range(310))
         rewrite_skill(self.repo, "core", "alpha", skill_text("alpha", body=body))
         self.assertIn("> 300", warnings_text(self.report()))
+
+    def test_body_over_char_cap_is_error(self) -> None:
+        body = "х" * (check.SKILL_CHARS_MAX + 1)
+        rewrite_skill(self.repo, "core", "alpha", skill_text("alpha", body=body))
+        report = self.report()
+        self.assertIn("символов (> 24000)", errors_text(report))
+
+    def test_body_at_char_cap_is_green(self) -> None:
+        body = "х" * (check.SKILL_CHARS_MAX - 200)
+        rewrite_skill(self.repo, "core", "alpha", skill_text("alpha", body=body))
+        self.assertEqual(self.report().errors, [])
 
     def test_orphan_reference_warning(self) -> None:
         write(self.repo / "skills/core/alpha/references/unused.md", "# Не используется\n")
