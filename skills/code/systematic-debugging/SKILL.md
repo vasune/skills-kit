@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: "4-phase root cause debugging: understand bugs before fixing."
+description: "Use when a bug's cause is still unclear."
 version: 1.2.0
 author: fhfqndj
 license: MIT

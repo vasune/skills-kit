@@ -1,6 +1,6 @@
 ---
 name: github-repo-management
-description: "Clone/create/fork repos; topics, properties, releases."
+description: "Use when creating a repo or tidying its settings."
 version: 1.2.0
 author: fhfqndj
 license: MIT
@@ -13,6 +13,12 @@ metadata:
 # GitHub Repository Management
 
 Create, clone, fork, configure, and manage GitHub repositories. Each section shows `gh` first, then the `git` + `curl` fallback.
+
+## When to Use
+
+- A repository must be created, forked, or cloned with its settings.
+- Topics, description, visibility, or default branch need fixing.
+- A release or tag must be cut.
 
 ## Prerequisites
 

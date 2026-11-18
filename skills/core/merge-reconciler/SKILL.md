@@ -1,6 +1,6 @@
 ---
 name: merge-reconciler
-description: "Neutral third-party resolution of agent merge conflicts."
+description: "Use when parallel agents conflict on one branch."
 version: 1.1.0
 author: fhfqndj
 license: MIT

@@ -1,6 +1,6 @@
 ---
 name: requesting-code-review
-description: "Pre-commit review: security scan, quality gates, auto-fix."
+description: "Use when reviewing a diff before commit or PR."
 version: 2.4.0
 author: fhfqndj
 license: MIT

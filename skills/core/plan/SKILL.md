@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Write a markdown plan before executing; do not build.
+description: "Use when the task needs a plan before execution."
 version: 2.3.0
 author: fhfqndj
 license: MIT
@@ -15,6 +15,13 @@ metadata:
 Use this skill when the user wants a plan instead of execution.
 
 If the goal is not agreed yet, run `brainstorming` first: a plan built on a guessed goal gets rewritten whole.
+
+## When to Use
+
+- The task needs design decisions before code: interfaces, order, tradeoffs.
+- The user asks for a plan, a design, or an estimate instead of an implementation.
+- Work must be handed to another session or agent.
+- A failed attempt needs a revised approach, not another patch.
 
 ## Core behavior
 

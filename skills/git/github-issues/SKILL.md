@@ -1,6 +1,6 @@
 ---
 name: github-issues
-description: "Create, triage, label, assign GitHub issues via gh or REST."
+description: "Use when work lives in GitHub issues."
 version: 1.2.0
 author: fhfqndj
 license: MIT
@@ -13,6 +13,12 @@ metadata:
 # GitHub Issues Management
 
 Create, search, triage, and manage GitHub issues. Each section shows `gh` first, then the `curl` fallback.
+
+## When to Use
+
+- The user asks to file, triage, label, or assign issues.
+- A change needs a tracking issue or a link to one.
+- Issues must be closed or moved after a merge.
 
 ## Prerequisites
 

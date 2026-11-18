@@ -1,6 +1,6 @@
 ---
 name: github-pr-workflow
-description: "GitHub PR lifecycle: branch, commit, open, CI, merge."
+description: "Use when work goes through a pull request."
 version: 1.2.0
 author: fhfqndj
 license: MIT
@@ -13,6 +13,12 @@ metadata:
 # GitHub Pull Request Workflow
 
 Complete guide for managing the PR lifecycle. Each section shows the `gh` way first, then the `git` + `curl` fallback for machines without `gh`.
+
+## When to Use
+
+- Work must go through a branch, a pull request, and CI.
+- A pull request is red, conflicted, or waiting for review.
+- A merge strategy must be chosen: squash, rebase, or merge commit.
 
 ## Prerequisites
 
