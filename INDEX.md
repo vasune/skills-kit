@@ -19,7 +19,7 @@
 |---|---|---|---|
 | [`brainstorming`](skills/core/brainstorming/SKILL.md) | L1 | цель ещё не ясна: выяснить, что строить, и согласовать дизайн | 2 |
 | [`agent-context`](skills/core/agent-context/SKILL.md) | L1 | агенту не хватает контекста: длинная сессия, передача работы | 2 |
-| [`delegating-to-subagents`](skills/core/delegating-to-subagents/SKILL.md) | L1 | задача делится на параллельные куски: бриф, приёмка, границы | 1 |
+| [`delegating-to-subagents`](skills/core/delegating-to-subagents/SKILL.md) | L1 | задача делится на параллельные куски: бриф, приёмка, границы | 7 |
 | [`local-work-hygiene`](skills/core/local-work-hygiene/SKILL.md) | L1 | прогоны, клоны и пробы: где им жить и что не трогать | 3 |
 | [`merge-reconciler`](skills/core/merge-reconciler/SKILL.md) | L1 | несколько агентов правили одну ветку и конфликтуют | 1 |
 | [`plan`](skills/core/plan/SKILL.md) | L1 | задача больше одного шага: сначала план, потом код | 2 |
