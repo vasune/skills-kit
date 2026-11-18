@@ -14,8 +14,11 @@ import { readFile, readdir } from 'node:fs/promises'
 import { join, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = fileURLToPath(new URL('.', import.meta.url))
+/**
+ * Группы навыков, которые провайдер умеет отдавать.
+ */
 const GROUPS = ['core', 'git', 'code']
+const ROOT = fileURLToPath(new URL('.', import.meta.url))
 const PROVIDER = 'skills-kit'
 /** Ранг bundled-провайдеров DSH: ниже локальных проектных и пользовательских корней. */
 const RANK = 600
@@ -87,12 +90,35 @@ async function describe(group, name) {
 }
 
 /**
- * Собрать каталог по всем группам.
+ * Выбранные группы из конфигурации строки.
+ * @param {object} config конфигурация строки Loader.
+ * @returns {string[]} группы в порядке файлов.
+ */
+function selectedGroups(config) {
+  const requested = config?.groups
+  if (requested === undefined) return GROUPS
+  if (!Array.isArray(requested) || requested.length === 0) {
+    throw new Error(
+      `skills-kit: "groups" — непустой массив из ${GROUPS.join(', ')}`,
+    )
+  }
+  const unknown = requested.filter((group) => !GROUPS.includes(group))
+  if (unknown.length > 0) {
+    throw new Error(
+      `skills-kit: неизвестные группы ${unknown.join(', ')}; допустимы ${GROUPS.join(', ')}`,
+    )
+  }
+  return GROUPS.filter((group) => requested.includes(group))
+}
+
+/**
+ * Собрать каталог по выбранным группам.
+ * @param {string[]} groups группы навыков.
  * @returns {Promise<object[]>} кандидаты в порядке имён.
  */
-async function discover() {
+async function discover(groups) {
   const candidates = []
-  for (const group of GROUPS) {
+  for (const group of groups) {
     let entries
     try {
       entries = await readdir(join(ROOT, 'skills', group), { withFileTypes: true })
@@ -108,28 +134,23 @@ async function discover() {
   return candidates.sort((left, right) => left.name.localeCompare(right.name))
 }
 
-/** Провайдер реестра навыков. */
-const provider = {
-  name: PROVIDER,
-  list: () => discover(),
-  /**
-   * Тело навыка без frontmatter: модель получает только инструкции.
-   * @param {object} candidate кандидат, выданный `list()`.
-   * @returns {Promise<object>} определение навыка.
-   */
-  async get(candidate) {
-    const text = await readFile(candidate.locator.file, 'utf8')
-    const parsed = parseFrontmatter(text)
-    return {
-      name: candidate.name,
-      description: candidate.description,
-      invocation: candidate.invocation,
-      provider: PROVIDER,
-      source: 'bundled',
-      resourceBase: candidate.resourceBase,
-      content: parsed === null ? text : parsed.body,
-    }
-  },
+/**
+ * Тело навыка без frontmatter: модель получает только инструкции.
+ * @param {object} candidate кандидат, выданный `list()`.
+ * @returns {Promise<object>} определение навыка.
+ */
+async function load(candidate) {
+  const text = await readFile(candidate.locator.file, 'utf8')
+  const parsed = parseFrontmatter(text)
+  return {
+    name: candidate.name,
+    description: candidate.description,
+    invocation: candidate.invocation,
+    provider: PROVIDER,
+    source: 'bundled',
+    resourceBase: candidate.resourceBase,
+    content: parsed === null ? text : parsed.body,
+  }
 }
 
 /** Имя плагина в Loader. */
@@ -140,7 +161,9 @@ export const inject = ['skills']
 /**
  * Зарегистрировать провайдер в реестре навыков.
  * @param {object} ctx контекст плагина.
+ * @param {{ groups?: string[] }} [config] выбранные группы; по умолчанию все.
  */
-export function apply(ctx) {
+export function apply(ctx, config = {}) {
+  const provider = { name: PROVIDER, list: () => discover(selectedGroups(config)), get: load }
   ctx.skills.registerProvider(() => provider)
 }
