@@ -189,6 +189,12 @@ plugin_manager install_bundle target: github:vasune/skills-kit
 Проверка связки пакета (`package.json` → патч → модуль) входит в
 `scripts/check.py`; версия `package.json` сверяется с `plugin.json`.
 
+Правило «сначала навык, потом действие» живёт в навыке `using-skills-kit`, а он
+сам себя не загрузит. Чтобы дисциплина включалась в каждой сессии, положи блок
+из `skills/core/using-skills-kit/references/agents-md-bootstrap.md` в
+`$DSH_HOME/AGENTS.md` (по умолчанию `~/.dsh/AGENTS.md`): DSH читает файл в
+первом запросе любой сессии и подхватывает правки без перезапуска.
+
 ## Как добавить или поправить навык
 
 1. Каталог `skills/<группа>/<навык>/SKILL.md`, frontmatter по формату выше.
